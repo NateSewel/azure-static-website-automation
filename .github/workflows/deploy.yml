@@ -1,0 +1,144 @@
+name: Azure Static Website Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  RESOURCE_GROUP: static-website-rg
+  VM_NAME: website-vm
+  ADMIN_USERNAME: azureuser
+
+jobs:
+  deploy:
+    name: Deploy to Azure VM
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get VM Public IP
+        id: get-ip
+        run: |
+          PUBLIC_IP=$(az network public-ip show \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name website-public-ip \
+            --query ipAddress \
+            --output tsv)
+          echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+          echo "✅ VM Public IP: $PUBLIC_IP"
+      
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ steps.get-ip.outputs.public_ip }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy Website Files
+        run: |
+          echo "📤 Uploading website files..."
+          scp -i ~/.ssh/id_rsa -r website/* \
+            ${{ env.ADMIN_USERNAME }}@${{ steps.get-ip.outputs.public_ip }}:/tmp/
+          
+          echo "🔧 Installing files and restarting NGINX..."
+          ssh -i ~/.ssh/id_rsa \
+            ${{ env.ADMIN_USERNAME }}@${{ steps.get-ip.outputs.public_ip }} << 'ENDSSH'
+            sudo rm -rf /var/www/html/*
+            sudo mv /tmp/* /var/www/html/ 2>/dev/null || true
+            sudo chown -R www-data:www-data /var/www/html
+            sudo chmod -R 755 /var/www/html
+            sudo systemctl restart nginx
+            echo "✅ Website deployed successfully!"
+          ENDSSH
+      
+      - name: Verify Deployment
+        run: |
+          echo "🔍 Verifying website is accessible..."
+          sleep 5
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            http://${{ steps.get-ip.outputs.public_ip }})
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Website is accessible! HTTP Status: $HTTP_CODE"
+            echo "🌐 URL: http://${{ steps.get-ip.outputs.public_ip }}"
+          else
+            echo "❌ Website returned HTTP Status: $HTTP_CODE"
+            exit 1
+          fi
+      
+      - name: Send Deployment Notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "🎉 Deployment completed successfully!"
+            echo "🌐 Website URL: http://${{ steps.get-ip.outputs.public_ip }}"
+          else
+            echo "❌ Deployment failed. Check logs for details."
+          fi
+
+  # Optional: Run tests after deployment
+  test:
+    name: Run Tests
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get VM Public IP
+        id: get-ip
+        run: |
+          PUBLIC_IP=$(az network public-ip show \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name website-public-ip \
+            --query ipAddress \
+            --output tsv)
+          echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+      
+      - name: Test Website Response
+        run: |
+          echo "🧪 Running website tests..."
+          
+          # Test HTTP response
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            http://${{ steps.get-ip.outputs.public_ip }})
+          echo "HTTP Status Code: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ HTTP test failed"
+            exit 1
+          fi
+          
+          # Test response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' \
+            http://${{ steps.get-ip.outputs.public_ip }})
+          echo "Response Time: ${RESPONSE_TIME}s"
+          
+          # Check for required content
+          CONTENT=$(curl -s http://${{ steps.get-ip.outputs.public_ip }})
+          if echo "$CONTENT" | grep -q "Cloud Engineer Portfolio"; then
+            echo "✅ Content verification passed"
+          else
+            echo "❌ Content verification failed"
+            exit 1
+          fi
+          
+          echo "✅ All tests passed!"

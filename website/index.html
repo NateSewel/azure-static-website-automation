@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Cloud Engineer Portfolio - Azure Static Website Deployment"
+    />
+    <title>Cloud Engineer Portfolio | Azure Deployment</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-color: #0078d4;
+        --secondary-color: #50e6ff;
+        --dark-bg: #1a1a1a;
+        --light-bg: #ffffff;
+        --text-dark: #333;
+        --text-light: #f0f0f0;
+        --accent: #ff6b6b;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: var(--text-dark);
+        overflow-x: hidden;
+      }
+
+      /* Navigation */
+      nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 1rem 0;
+      }
+
+      nav .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      nav .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+      }
+
+      nav ul {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+      }
+
+      nav a {
+        text-decoration: none;
+        color: var(--text-dark);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      nav a:hover {
+        color: var(--primary-color);
+      }
+
+      /* Hero Section */
+      .hero {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 1px,
+          transparent 1px
+        );
+        background-size: 50px 50px;
+        animation: moveGrid 20s linear infinite;
+      }
+
+      @keyframes moveGrid {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(50px, 50px);
+        }
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+      }
+
+      .hero h1 {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 1s ease;
+      }
+
+      .hero p {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        animation: fadeInUp 1s ease 0.2s both;
+      }
+
+      .hero .badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        margin-bottom: 2rem;
+        animation: fadeInUp 1s ease 0.4s both;
+      }
+
+      .cta-button {
+        display: inline-block;
+        padding: 1rem 2.5rem;
+        background: white;
+        color: var(--primary-color);
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+        animation: fadeInUp 1s ease 0.6s both;
+      }
+
+      .cta-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Features Section */
+      .features {
+        padding: 5rem 2rem;
+        background: var(--light-bg);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+        color: var(--primary-color);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      .feature-card h3 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      /* Tech Stack Section */
+      .tech-stack {
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .tech-item {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+      }
+
+      .tech-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .tech-item .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Deployment Info */
+      .deployment-info {
+        padding: 5rem 2rem;
+        background: var(--dark-bg);
+        color: var(--text-light);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .info-card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2rem;
+        border-radius: 15px;
+        border-left: 4px solid var(--secondary-color);
+      }
+
+      .info-card h3 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(80, 230, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin-top: 1rem;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        background: #50e6ff;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      /* Footer */
+      footer {
+        background: #0a0a0a;
+        color: var(--text-light);
+        text-align: center;
+        padding: 3rem 2rem;
+      }
+
+      footer a {
+        color: var(--secondary-color);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero p {
+          font-size: 1.2rem;
+        }
+
+        nav ul {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .features-grid,
+        .tech-grid,
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav>
+      <div class="container">
+        <div class="logo">☁️ Cloud Portfolio</div>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#tech">Tech Stack</a></li>
+          <li><a href="#info">Deployment</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="hero-content">
+        <div class="badge">🚀 Powered by Azure</div>
+        <h1>Cloud Engineer Portfolio</h1>
+        <p>
+          Automated Azure Static Website Deployment with Infrastructure as Code
+        </p>
+        <a href="#features" class="cta-button">Explore Features</a>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <h2 class="section-title">Deployment Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Full Automation</h3>
+            <p>
+              Complete infrastructure deployment using Azure CLI and bash
+              scripts. Zero manual configuration needed.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Enterprise Security</h3>
+            <p>
+              Network Security Groups with proper firewall rules, SSH key
+              authentication, and security headers configured.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <h3>Scalable Architecture</h3>
+            <p>
+              Virtual Network with proper subnet segmentation, ready to scale as
+              your needs grow.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Cost Optimized</h3>
+            <p>
+              Using B-series burstable VMs for cost efficiency. ~$12-15/month
+              for complete hosting solution.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3>CI/CD Ready</h3>
+            <p>
+              GitHub Actions workflow included for automated deployment pipeline
+              and continuous integration.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📚</div>
+            <h3>Well Documented</h3>
+            <p>
+              Complete documentation with step-by-step guides, architecture
+              diagrams, and troubleshooting tips.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tech" class="tech-stack">
+      <div class="container">
+        <h2 class="section-title">Technology Stack</h2>
+        <div class="tech-grid">
+          <div class="tech-item">
+            <div class="icon">☁️</div>
+            <h4>Microsoft Azure</h4>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🐧</div>
+            <h4>Ubuntu 22.04</h4>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🌐</div>
+            <h4>NGINX</h4>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🔧</div>
+            <h4>Azure CLI</h4>
+          </div>
+          <div class="tech-item">
+            <div class="icon">📜</div>
+            <h4>Bash Scripts</h4>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🔄</div>
+            <h4>GitHub Actions</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deployment Info -->
+    <section id="info" class="deployment-info">
+      <div class="container">
+        <h2 class="section-title" style="color: var(--secondary-color)">
+          Deployment Information
+        </h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>Infrastructure</h3>
+            <p><strong>Cloud Provider:</strong> Microsoft Azure</p>
+            <p><strong>VM Size:</strong> Standard_B1s</p>
+            <p><strong>OS:</strong> Ubuntu 22.04 LTS</p>
+            <p><strong>Region:</strong> East US</p>
+            <div class="status-indicator">
+              <span class="status-dot"></span>
+              <span>Online</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3>Network</h3>
+            <p><strong>VNet:</strong> 10.0.0.0/16</p>
+            <p><strong>Subnet:</strong> 10.0.1.0/24</p>
+            <p><strong>Public IP:</strong> Static</p>
+            <p><strong>DNS:</strong> Azure DNS</p>
+          </div>
+          <div class="info-card">
+            <h3>Web Server</h3>
+            <p><strong>Server:</strong> NGINX</p>
+            <p><strong>Protocols:</strong> HTTP/HTTPS</p>
+            <p><strong>Compression:</strong> Gzip Enabled</p>
+            <p><strong>Caching:</strong> Optimized</p>
+          </div>
+          <div class="info-card">
+            <h3>Security</h3>
+            <p><strong>NSG Rules:</strong> Configured</p>
+            <p><strong>SSH Auth:</strong> Key-based</p>
+            <p><strong>Firewall:</strong> UFW Enabled</p>
+            <p><strong>Headers:</strong> Security Headers Set</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <p>
+          &copy; 2025 Azure Static Website Deployment | Built with ❤️ using
+          Infrastructure as Code
+        </p>
+        <p style="margin-top: 1rem">
+          <a href="https://github.com" target="_blank">GitHub Repository</a> |
+          <a href="https://docs.microsoft.com/azure" target="_blank"
+            >Azure Docs</a
+          >
+          |
+          <a href="#home">Back to Top</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Smooth scrolling for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      // Add scroll animation to feature cards
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -100px 0px",
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }
+        });
+      }, observerOptions);
+
+      document
+        .querySelectorAll(".feature-card, .tech-item, .info-card")
+        .forEach((card) => {
+          card.style.opacity = "0";
+          card.style.transform = "translateY(20px)";
+          card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+          observer.observe(card);
+        });
+
+      // Update status dynamically
+      setInterval(() => {
+        const statusDot = document.querySelector(".status-dot");
+        if (statusDot) {
+          statusDot.style.animation = "none";
+          setTimeout(() => {
+            statusDot.style.animation = "pulse 2s infinite";
+          }, 10);
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>
