@@ -1,44 +1,14 @@
-#!/bin/bash
-################################################################################
-# deploy-website.sh - Deploy custom website files to Azure VM
-# Description: Uploads website files and configures NGINX
-# Usage: ./deploy-website.sh [website_directory]
-################################################################################
+# Create the website directory with a beautiful site
+mkdir -p website/css website/js website/assets/images
 
-set -euo pipefail
-
-# Color codes
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-# Configuration
-RESOURCE_GROUP="${RESOURCE_GROUP:-static-website-rg}"
-PUBLIC_IP_NAME="${PUBLIC_IP_NAME:-website-public-ip}"
-ADMIN_USERNAME="${ADMIN_USERNAME:-azureuser}"
-SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/azure_website_key}"
-WEBSITE_DIR="${1:-./website}"
-
-echo -e "${BLUE}🚀 Azure Website Deployment Script${NC}"
-echo "══════════════════════════════════════"
-echo ""
-
-# Function to create sample website
-create_sample_website() {
-    echo -e "${YELLOW}📁 Creating sample website directory...${NC}"
-    
-    mkdir -p "$WEBSITE_DIR"/{css,js,assets/images}
-    
-    # Create index.html
-    cat > "$WEBSITE_DIR/index.html" << 'HTMLEOF'
+# Create main HTML file
+cat > website/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Azure Static Website</title>
+    <title>My Azure Website</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -57,14 +27,14 @@ create_sample_website() {
         <div class="hero-content">
             <div class="icon">🚀</div>
             <h1>Welcome to My Website!</h1>
-            <p>Deployed on Microsoft Azure with Infrastructure as Code</p>
+            <p>Successfully deployed on Microsoft Azure</p>
             <a href="#about" class="cta-button">Learn More</a>
         </div>
     </section>
 
     <section id="about" class="content-section">
         <div class="container">
-            <h2>🎯 About This Deployment</h2>
+            <h2>🎯 About This Project</h2>
             <div class="features">
                 <div class="feature-card">
                     <div class="feature-icon">☁️</div>
@@ -79,12 +49,12 @@ create_sample_website() {
                 <div class="feature-card">
                     <div class="feature-icon">🔒</div>
                     <h3>Secure</h3>
-                    <p>Network security groups and firewall</p>
+                    <p>Protected by Network Security Groups</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
-                    <h3>Fast</h3>
-                    <p>Optimized for performance</p>
+                    <h3>Fast & Optimized</h3>
+                    <p>Gzip compression and caching enabled</p>
                 </div>
             </div>
         </div>
@@ -92,22 +62,28 @@ create_sample_website() {
 
     <section id="contact" class="content-section alt-bg">
         <div class="container">
-            <h2>📬 Get In Touch</h2>
-            <p>This is a sample static website. Customize it by editing the files in <code>/var/www/html/</code></p>
+            <h2>📬 Contact Information</h2>
+            <p>This website was deployed using Azure CLI and Infrastructure as Code principles.</p>
+            <div class="tech-stack">
+                <span class="tech-badge">Azure</span>
+                <span class="tech-badge">NGINX</span>
+                <span class="tech-badge">Ubuntu 22.04</span>
+                <span class="tech-badge">Azure CLI</span>
+            </div>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Azure Static Website | Deployed with ❤️ using Azure CLI</p>
+        <p>&copy; 2025 My Azure Website | Deployed with ❤️ using Azure Infrastructure as Code</p>
     </footer>
 
     <script src="js/script.js"></script>
 </body>
 </html>
-HTMLEOF
+EOF
 
-    # Create CSS
-    cat > "$WEBSITE_DIR/css/style.css" << 'CSSEOF'
+# Create CSS file
+cat > website/css/style.css << 'EOF'
 * {
     margin: 0;
     padding: 0;
@@ -268,11 +244,21 @@ h2 {
     margin-bottom: 1rem;
 }
 
-code {
-    background: #f4f4f4;
-    padding: 3px 8px;
-    border-radius: 4px;
-    color: #667eea;
+/* Tech Stack */
+.tech-stack {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.tech-badge {
+    background: #667eea;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: bold;
 }
 
 /* Footer */
@@ -305,12 +291,16 @@ footer {
         flex-direction: column;
         gap: 1rem;
     }
+    
+    .features {
+        grid-template-columns: 1fr;
+    }
 }
-CSSEOF
+EOF
 
-    # Create JavaScript
-    cat > "$WEBSITE_DIR/js/script.js" << 'JSEOF'
-// Smooth scrolling
+# Create JavaScript file
+cat > website/js/script.js << 'EOF'
+// Smooth scrolling for navigation
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -324,11 +314,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Log deployment info
+// Console message
 console.log('🚀 Azure Static Website loaded successfully!');
-console.log('Deployed via Azure CLI + NGINX');
+console.log('Server: NGINX on Ubuntu 22.04');
+console.log('Deployed via: Azure CLI');
 
-// Add animation on scroll
+// Animate cards on scroll
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -344,128 +335,6 @@ document.querySelectorAll('.feature-card').forEach(card => {
     card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(card);
 });
-JSEOF
+EOF
 
-    echo -e "${GREEN}✅ Sample website created in: $WEBSITE_DIR${NC}"
-    echo ""
-}
-
-# Check if website directory exists
-if [ ! -d "$WEBSITE_DIR" ]; then
-    echo -e "${YELLOW}⚠️  Website directory not found: $WEBSITE_DIR${NC}"
-    echo ""
-    read -p "Would you like to create a sample website? (y/n): " -n 1 -r
-    echo
-    
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        create_sample_website
-    else
-        echo -e "${RED}❌ Deployment cancelled.${NC}"
-        echo "Create a website directory with your HTML files and try again."
-        exit 1
-    fi
-fi
-
-# Verify website has content
-if [ -z "$(ls -A $WEBSITE_DIR)" ]; then
-    echo -e "${RED}❌ Website directory is empty: $WEBSITE_DIR${NC}"
-    exit 1
-fi
-
-echo -e "${BLUE}📦 Website content:${NC}"
-ls -lh "$WEBSITE_DIR"
-echo ""
-
-# Get public IP
-echo -e "${BLUE}🔍 Getting VM public IP...${NC}"
-PUBLIC_IP=$(az network public-ip show \
-    --resource-group "$RESOURCE_GROUP" \
-    --name "$PUBLIC_IP_NAME" \
-    --query ipAddress \
-    --output tsv 2>/dev/null)
-
-if [ -z "$PUBLIC_IP" ]; then
-    echo -e "${RED}❌ Could not retrieve public IP${NC}"
-    echo "Make sure the VM is deployed and running."
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Target server: $PUBLIC_IP${NC}"
-echo ""
-
-# Check SSH key
-if [ ! -f "$SSH_KEY_PATH" ]; then
-    echo -e "${RED}❌ SSH key not found: $SSH_KEY_PATH${NC}"
-    exit 1
-fi
-
-# Test SSH connectivity
-echo -e "${BLUE}🔍 Testing SSH connection...${NC}"
-if ! ssh -i "$SSH_KEY_PATH" -o ConnectTimeout=10 -o BatchMode=yes \
-    -o StrictHostKeyChecking=no "$ADMIN_USERNAME@$PUBLIC_IP" "echo 'connected'" &>/dev/null; then
-    echo -e "${RED}❌ Cannot connect to VM via SSH${NC}"
-    echo "Verify the VM is running and accessible."
-    exit 1
-fi
-
-echo -e "${GREEN}✅ SSH connection successful${NC}"
-echo ""
-
-# Upload files
-echo -e "${BLUE}📤 Uploading website files...${NC}"
-scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -r "$WEBSITE_DIR"/* \
-    "$ADMIN_USERNAME@$PUBLIC_IP:/tmp/website-deploy/" 2>/dev/null || \
-scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -r "$WEBSITE_DIR"/* \
-    "$ADMIN_USERNAME@$PUBLIC_IP:/tmp/"
-
-echo -e "${GREEN}✅ Files uploaded${NC}"
-echo ""
-
-# Deploy files on server
-echo -e "${BLUE}🔧 Installing files and restarting NGINX...${NC}"
-ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no "$ADMIN_USERNAME@$PUBLIC_IP" << 'ENDSSH'
-    set -e
-    
-    # Create backup
-    if [ -d /var/www/html.backup ]; then
-        sudo rm -rf /var/www/html.backup
-    fi
-    sudo cp -r /var/www/html /var/www/html.backup 2>/dev/null || true
-    
-    # Deploy new files
-    sudo rm -rf /var/www/html/*
-    sudo mv /tmp/website-deploy/* /var/www/html/ 2>/dev/null || sudo mv /tmp/* /var/www/html/ 2>/dev/null || true
-    
-    # Set permissions
-    sudo chown -R www-data:www-data /var/www/html
-    sudo chmod -R 755 /var/www/html
-    
-    # Restart NGINX
-    sudo systemctl restart nginx
-    
-    echo "Deployment completed on server"
-ENDSSH
-
-echo -e "${GREEN}✅ Website deployed successfully!${NC}"
-echo ""
-
-# Test website
-echo -e "${BLUE}🧪 Testing website accessibility...${NC}"
-sleep 3
-
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$PUBLIC_IP" 2>/dev/null || echo "000")
-
-if [ "$HTTP_CODE" = "200" ]; then
-    echo -e "${GREEN}✅ Website is accessible! HTTP Status: $HTTP_CODE${NC}"
-else
-    echo -e "${YELLOW}⚠️  Website returned HTTP Status: $HTTP_CODE${NC}"
-fi
-
-echo ""
-echo "══════════════════════════════════════"
-echo -e "${GREEN}🎉 Deployment Complete!${NC}"
-echo "══════════════════════════════════════"
-echo ""
-echo -e "🌐 Visit your website: ${BLUE}http://$PUBLIC_IP${NC}"
-echo -e "🔑 SSH access: ${BLUE}ssh -i $SSH_KEY_PATH $ADMIN_USERNAME@$PUBLIC_IP${NC}"
-echo ""
+echo "✅ Website files created!"
