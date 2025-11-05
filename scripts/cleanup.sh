@@ -2,7 +2,7 @@
 ################################################################################
 # Azure Resource Cleanup Script
 # Description: Safely delete all Azure resources created for static website
-# Author: DevOps Team
+# Author: Nate Isewede
 # Version: 1.0.0
 ################################################################################
 
@@ -69,10 +69,10 @@ echo "The resource group is being deleted in the background."
 echo "To check deletion status, run:"
 echo "  az group show --name $RESOURCE_GROUP"
 echo ""
-echo "When deletion is complete, the command will return an error."
+echo "When deletion is complete, you can exit."
 
 # Optional: Wait for deletion to complete
-read -p "Wait for deletion to complete? (y/N): " WAIT_CHOICE
+read -p "Wait for deletion to complete? (Y/N): " WAIT_CHOICE
 
 if [[ "$WAIT_CHOICE" =~ ^[Yy]$ ]]; then
     echo ""
